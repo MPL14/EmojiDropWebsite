@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, useAnimationControls } from 'framer-motion'
 
-const emojis = ['😀', '😂', '🥳', '😎', '🤩', '🥰', '🤯', '🤓', '🤪', '😜']
+const emojis = ['😀', '😂', '🥳', '😎', '🤩', '🥰', '🤯', '🤓', '🤪', '😜','🤠','🤤','🙃','🤬','💩','😰','🥕']
 
 const EmojiAnimation = ({ emoji }: { emoji: string }) => {
   const controls = useAnimationControls()
@@ -48,7 +48,7 @@ const EmojiAnimation = ({ emoji }: { emoji: string }) => {
     <motion.div
       ref={containerRef}
       animate={controls}
-      className="absolute text-6xl pointer-events-none"
+      className="absolute text-6xl pointer-events-none select-none"
       style={{ left: 0, top: 0 }}
     >
       {emoji}
@@ -56,16 +56,87 @@ const EmojiAnimation = ({ emoji }: { emoji: string }) => {
   )
 }
 
-export default function LandingPage() {
+const FallingEmoji = ({ x, y }: { x: number; y: number }) => {
+  const emoji = emojis[Math.floor(Math.random() * emojis.length)]
+  const fallDistance = Math.random() * 300 + 200
+  const horizontalMovement = (Math.random() - 0.5) * 200
+
   return (
-    <div className="relative min-h-screen bg-black text-white overflow-hidden">
+    <motion.div
+      className="absolute text-4xl pointer-events-none"
+      style={{ left: x, top: y }}
+      initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+      animate={{ 
+        x: horizontalMovement, 
+        y: fallDistance, 
+        opacity: 0, 
+        scale: 0.5,
+        rotate: Math.random() * 360
+      }}
+      transition={{ duration: 1.5, ease: 'easeOut' }}
+    >
+      {emoji}
+    </motion.div>
+  )
+}
+
+export default function LandingPage() {
+  const [fallingEmojis, setFallingEmojis] = useState<{ x: number; y: number; id: number }[]>([])
+  const [isMouseDown, setIsMouseDown] = useState(false)
+
+  const createEmojis = useCallback((x: number, y: number) => {
+    const newEmojiId = Date.now()
+    
+    const newFallingEmojis = Array.from({ length: 10 }, (_, index) => ({
+      x: x + (Math.random() - 0.5) * 100,
+      y: y + (Math.random() - 0.5) * 50,
+      id: newEmojiId + index,
+    }))
+    setFallingEmojis((prevEmojis) => [...prevEmojis, ...newFallingEmojis])
+
+    setTimeout(() => {
+      setFallingEmojis((prevEmojis) => prevEmojis.filter((emoji) => emoji.id < newEmojiId || emoji.id >= newEmojiId + 10))
+    }, 1500)
+  }, [])
+
+  const handleMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
+    setIsMouseDown(true)
+    createEmojis(event.clientX, event.clientY)
+  }
+
+  const handleMouseUp = () => {
+    setIsMouseDown(false)
+  }
+
+  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (isMouseDown) {
+      createEmojis(event.clientX, event.clientY)
+    }
+  }
+
+  useEffect(() => {
+    window.addEventListener('mouseup', handleMouseUp)
+    return () => {
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [])
+
+  return (
+    <div 
+      className="relative min-h-screen bg-black text-white overflow-hidden cursor-pointer select-none"
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+    >
       <div className="absolute inset-0">
         {emojis.map((emoji, index) => (
           <EmojiAnimation key={index} emoji={emoji} />
         ))}
       </div>
+      {fallingEmojis.map((emoji) => (
+        <FallingEmoji key={emoji.id} x={emoji.x} y={emoji.y} />
+      ))}
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen p-4">
-        <h1 className="text-5xl md:text-6xl font-bold text-center mb-8">
+        <h1 className="text-5xl md:text-6xl font-bold text-center mb-8 select-none">
           🫨 Emoji Drop
         </h1>
         <a
