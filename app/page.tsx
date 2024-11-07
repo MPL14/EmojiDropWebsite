@@ -141,8 +141,8 @@ export default function LandingPage() {
           <Image
             src="/Shapefall.png"
             alt="Emoji Drop Logo"
-            width={64}
-            height={64}
+            width={124}
+            height={124}
             className="select-none"
           />
           <h1 className="text-5xl md:text-6xl font-bold text-center select-none">
