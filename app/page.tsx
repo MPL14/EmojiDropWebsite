@@ -149,7 +149,7 @@ export default function LandingPage() {
             Emoji Drop
           </h1>
           <a
-            href="https://apps.apple.com/app/your-app-id"
+            href="https://apps.apple.com/us/app/emoji-drop-game/id6737870550?platform=iphone"
             target="_blank"
             rel="noopener noreferrer"
             className="w-[200px] flex justify-center"
